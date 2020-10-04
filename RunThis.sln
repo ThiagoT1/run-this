@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30523.141
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827A171E-A9C3-4C0A-AC3A-D9C9704BFE6E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RunThis.Core", "src\RunThis.Core\RunThis.Core.csproj", "{DACD001C-29F0-4AAE-BBE2-3BE54C04C2F5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{18C461CA-609B-4C7B-9045-E14A82172CF6}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		md-styles.css = md-styles.css
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{3832F95F-C939-47D1-A338-10856974C80A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0F03246D-ABAA-4BC3-9476-CF0318A00C30}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RunThis.Tests", "tests\RunThis.Tests\RunThis.Tests.csproj", "{EE850136-0B5A-4277-8A9D-D04C086177A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DACD001C-29F0-4AAE-BBE2-3BE54C04C2F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DACD001C-29F0-4AAE-BBE2-3BE54C04C2F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DACD001C-29F0-4AAE-BBE2-3BE54C04C2F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DACD001C-29F0-4AAE-BBE2-3BE54C04C2F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE850136-0B5A-4277-8A9D-D04C086177A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE850136-0B5A-4277-8A9D-D04C086177A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE850136-0B5A-4277-8A9D-D04C086177A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE850136-0B5A-4277-8A9D-D04C086177A3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DACD001C-29F0-4AAE-BBE2-3BE54C04C2F5} = {827A171E-A9C3-4C0A-AC3A-D9C9704BFE6E}
+		{EE850136-0B5A-4277-8A9D-D04C086177A3} = {0F03246D-ABAA-4BC3-9476-CF0318A00C30}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {790D9EF1-552C-4AE8-AE93-90D9674657FF}
+	EndGlobalSection
+EndGlobal
