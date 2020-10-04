@@ -1,16 +1,19 @@
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using RunThis.Core;
+using RunThis.Core.Invoker;
 
-namespace RunThis.Tests
+namespace RunThis.Tests.Targets
 {
-    public class FighterProxy : Proxy, IFighter
+    public class FighterProxy : IFighter
     {
         private readonly IFighter _target;
-        
-        public FighterProxy(IFighter target, ILoggerFactory loggerFactory)
-            : base (loggerFactory.CreateLogger<FighterProxy>())
+        private readonly IInvoker _invoker;
+
+
+        public FighterProxy(IFighter target, IInvoker invoker)
         {
             _target = target;
+            _invoker = invoker;
         }
 
         readonly struct GetReadyCall : ICall
@@ -41,12 +44,19 @@ namespace RunThis.Tests
             public ValueTask Invoke() => _target.TakeDamage(_value);
         }
 
-        public ValueTask GetReady() => ExecuteVoidCall(new GetReadyCall(_target));
+        public ValueTask GetReady()
+        {
+            return _invoker.ExecuteVoidCall(new GetReadyCall(_target));
+        }
 
-        public ValueTask<int> GetRemainingHealth() => ExecuteValueCall(new GetRemainingHealthCall(_target));
-        
-        public ValueTask TakeDamage(int value) => ExecuteVoidCall(new TakeDamageCall(_target, value));
-        
+        public ValueTask<int> GetRemainingHealth()
+        {
+            return _invoker.ExecuteValueCall(new GetRemainingHealthCall(_target));
+        }
+
+        public ValueTask TakeDamage(int value)
+        {
+            return _invoker.ExecuteVoidCall(new TakeDamageCall(_target, value));
+        }   
     }
-
 }

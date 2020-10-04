@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.Common.Interfaces;
 
-namespace RunThis.Tests
+namespace RunThis.Tests.Targets
 {
     public interface IFighter
     {

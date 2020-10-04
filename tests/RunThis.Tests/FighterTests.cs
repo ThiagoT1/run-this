@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RunThis.Core.Invoker;
+using RunThis.Tests.Targets;
 using TestExtensions;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,7 +30,7 @@ namespace RunThis.Tests
         public async Task GetReady()
         {
             IFighter fighter = new Fighter();
-            IFighter proxy = new FighterProxy(fighter, _fixture.Provider.GetRequiredService<ILoggerFactory>());
+            IFighter proxy = new FighterProxy(fighter, new SingleThreadInvoker());
             await proxy.GetReady();
         }
 
@@ -37,7 +39,7 @@ namespace RunThis.Tests
         public async Task Throughput_GetReady(int messageCount)
         {
             IFighter fighter = new Fighter();
-            IFighter proxy = new FighterProxy(fighter, _fixture.Provider.GetRequiredService<ILoggerFactory>());
+            IFighter proxy = new FighterProxy(fighter, new SingleThreadInvoker());
 
             Stopwatch watch = Stopwatch.StartNew();
             watch.Reset();
@@ -69,7 +71,7 @@ namespace RunThis.Tests
         public async Task Throughput_GetRemainingHealth(int messageCount)
         {
             IFighter fighter = new Fighter();
-            IFighter proxy = new FighterProxy(fighter, _fixture.Provider.GetRequiredService<ILoggerFactory>());
+            IFighter proxy = new FighterProxy(fighter, new SingleThreadInvoker());
 
             Stopwatch watch = Stopwatch.StartNew();
             watch.Reset();
