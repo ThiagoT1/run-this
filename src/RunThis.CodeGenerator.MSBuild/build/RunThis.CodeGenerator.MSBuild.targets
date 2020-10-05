@@ -1,0 +1,141 @@
+<Project TreatAsLocalProperty="
+         RunThis_ArgsFile;
+         RunThis_CodeGenDirectory;
+         RunThis_CodeGeneratorEnabled;
+         RunThis_CoreAssembly;
+         RunThis_DotNetHost;
+         RunThis_GeneratorAssembly;
+         RunThis_MSBuildIsCore;
+         RunThis_OutputFileName;
+         RunThis_TargetIsCore;
+         RunThis_TaskAssembly;
+         RunThis_CodeGeneratorTargetFramework;">
+
+  <PropertyGroup>
+    <RunThis_CodeGeneratorTargetFramework>netcoreapp3.1</RunThis_CodeGeneratorTargetFramework>
+    <RunThis_DotNetHost Condition="'$(DotNetFromPath)' == 'true'">dotnet</RunThis_DotNetHost>
+    <RunThis_CoreAssembly Condition="'$(RunThisCodeGenCoreAssembly)' != ''">$(RunThisCodeGenCoreAssembly)</RunThis_CoreAssembly>
+    <RunThis_CoreAssembly Condition="'$(RunThis_CoreAssembly)' == ''">$(MSBuildThisFileDirectory)..\tasks\$(RunThis_CodeGeneratorTargetFramework)\RunThis.CodeGenerator.MSBuild.dll</RunThis_CoreAssembly>
+
+    <!-- Specify the assembly containing the MSBuild tasks. -->
+    <RunThis_MSBuildIsCore Condition="'$(MSBuildRuntimeType)' == 'Core' or '$(OS)' != 'Windows_NT'">true</RunThis_MSBuildIsCore>
+    <RunThis_TaskAssembly Condition="'$(RunThisCodeGenTasksAssembly)' != ''">$(RunThisCodeGenTasksAssembly)</RunThis_TaskAssembly>
+    <RunThis_TaskAssembly Condition="'$(RunThis_TaskAssembly)' == '' and '$(RunThis_MSBuildIsCore)' == 'true'">$(MSBuildThisFileDirectory)..\tasks\$(RunThis_CodeGeneratorTargetFramework)\RunThis.CodeGenerator.MSBuild.Tasks.dll</RunThis_TaskAssembly>
+
+    <!-- When the MSBuild host is full-framework, we defer to PATH for dotnet -->
+    <RunThis_DotNetHost Condition="'$(RunThis_MSBuildIsCore)' != 'true'">dotnet</RunThis_DotNetHost>
+    <RunThis_DotNetHost Condition="'$(DotNetHost)' != ''">$(DotNetHost)</RunThis_DotNetHost>
+
+    <!-- Specify the assembly containing the code generator. -->
+    <RunThis_GeneratorAssembly Condition="'$(RunThis_GeneratorAssembly)' == ''">$(RunThis_CoreAssembly)</RunThis_GeneratorAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RunThisCodeGenLogLevel Condition="'$(RunThisCodeGenLogLevel)' == ''">Warning</RunThisCodeGenLogLevel>
+    <RunThis_CodeGenDirectory Condition="'$([System.IO.Path]::IsPathRooted($(IntermediateOutputPath)))' == 'true'">$(IntermediateOutputPath)</RunThis_CodeGenDirectory>
+    <RunThis_CodeGenDirectory Condition="'$(RunThis_CodeGenDirectory)' == ''">$(ProjectDir)$(IntermediateOutputPath)</RunThis_CodeGenDirectory>
+    <RunThis_OutputFileName>$(RunThis_CodeGenDirectory)$(TargetName).RunThis.g.cs</RunThis_OutputFileName>
+    <RunThis_CodeGeneratorEnabled Condition=" '$(DesignTimeBuild)' != 'true'">true</RunThis_CodeGeneratorEnabled>
+    <RunThis_ArgsFile>$(RunThis_CodeGenDirectory)$(TargetName).RunThis.g.args.txt</RunThis_ArgsFile>
+  </PropertyGroup>
+
+  <UsingTask
+    TaskName="RunThis.CodeGenerator.MSBuild.Tasks.GetDotNetHost"
+    AssemblyFile="$(RunThis_TaskAssembly)"
+    Condition="'$(RunThis_CodeGeneratorEnabled)' == 'true' and '$(RunThis_DotNetHost)' == '' and '$(RunThis_MSBuildIsCore)' == 'true'" />
+  
+  <!--
+    Input to the code generator should not include its output.
+  -->
+  <ItemGroup>
+    <RunThis_CodeGenInputs Include="@(Compile);@(ReferencePath)" />
+    <RunThis_CodeGenInputs Remove="$(RunThis_OutputFileName)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <ResolveReferencesDependsOn>$(ResolveReferencesDependsOn);RunThisCodeGenCollectInputArgs;RunThisGenerateCode</ResolveReferencesDependsOn>
+  </PropertyGroup>
+
+  <!--
+    Update the file which captures the total set of all inputs to the code generator.
+    This is loosely based on the _GenerateCompileDependencyCache target from the .NET project system.
+  -->
+  <Target Name="RunThisCodeGenCollectInputArgs"
+          DependsOnTargets="ResolveAssemblyReferences"
+          Condition="'$(RunThis_CodeGeneratorEnabled)' == 'true'">
+
+    <ItemGroup>
+      <RunThis_CodeGenArgs Include="WaitForDebugger" Condition="'$(RunThisCodeGenWaitForDebugger)' != ''" />
+      <RunThis_CodeGenArgs Include="LogLevel:$(RunThisCodeGenLogLevel)" />
+      <RunThis_CodeGenArgs Include="DebuggerStepThrough:true" Condition="'$(RunThisCodeGenDebuggerStepThrough)' == 'true'" />
+      <RunThis_CodeGenArgs Include="ProjectPath:$(MSBuildProjectFullPath)"/>
+      <RunThis_CodeGenArgs Include="ProjectGuid:$(ProjectGuid)"/>
+      <RunThis_CodeGenArgs Include="AssemblyName:$(AssemblyName)"/>
+      <RunThis_CodeGenArgs Include="OutputType:$(OutputType)"/>
+      <RunThis_CodeGenArgs Include="TargetPath:$(TargetPath)"/>
+      <RunThis_CodeGenArgs Include="CodeGenOutputFile:$(RunThis_OutputFileName)"/>
+      <RunThis_CodeGenArgs Include="@(Compile -> 'Compile:%(FullPath)')"/>
+      <RunThis_CodeGenArgs Include="@(ReferencePath -> 'Reference:%(FullPath)')"/>
+      <RunThis_CodeGenArgs Include="DefineConstants:$(DefineConstants.Replace(';',','))"/>
+    </ItemGroup>
+
+    <Message Text="[RunThis.CodeGenerator] - CodeGen arguments=@(RunThis_CodeGenArgs -> '%(Identity)')" Importance="Low"/>
+    <Message Text="[RunThis.CodeGenerator] - CodeGen arguments file=$(RunThis_ArgsFile)" Importance="Low"/>
+
+    <!--
+      In order to detect when the set of input files itself has changed, or some property values have changed,
+      these values are hashed into the arguments file. Any changes will trigger a file write and hence the code
+      generator will be re-executed.
+    -->
+    <Hash ItemsToHash="@(RunThis_CodeGenInputs);@(RunThis_CodeGenArgs)">
+      <Output TaskParameter="HashResult" PropertyName="RunThis_UpdatedInputCacheContents" />
+    </Hash>
+
+    <!-- Add the hash of inputs to the codegen arguments and write the arguments file if it has changed -->
+    <ItemGroup>
+      <RunThis_CodeGenArgs Include="InputHash:$(RunThis_UpdatedInputCacheContents)"/>
+    </ItemGroup>
+
+    <WriteLinesToFile
+      Overwrite="true"
+      File="$(RunThis_ArgsFile)"
+      Lines="@(RunThis_CodeGenArgs)"
+      WriteOnlyWhenDifferent="True"/>
+
+    <ItemGroup>
+      <FileWrites Include="$(RunThis_ArgsFile)" Condition="Exists('$(RunThis_ArgsFile)')" />
+    </ItemGroup>
+    
+  </Target>
+
+  <Target Name="RunThisGenerateCode"
+          AfterTargets="RunThisCodeGenCollectInputArgs;ResolveAssemblyReferences"
+          BeforeTargets="AssignTargetPaths"
+          Inputs="@(RunThis_CodeGenInputs);$(RunThis_ArgsFile)"
+          Outputs="$(RunThis_OutputFileName)"
+          Condition="'$(RunThis_CodeGeneratorEnabled)' == 'true'">
+
+    <Message Text="[RunThis.CodeGenerator] - CodeGen executable=$(RunThis_GeneratorAssembly)" Importance="Low" />
+
+    <RunThis.CodeGenerator.MSBuild.Tasks.GetDotNetHost Condition="'$(RunThis_DotNetHost)' == '' and '$(RunThis_MSBuildIsCore)' == 'true' ">
+      <Output TaskParameter="DotNetHost" PropertyName="RunThis_DotNetHost" />
+    </RunThis.CodeGenerator.MSBuild.Tasks.GetDotNetHost>
+
+    <!-- Use dotnet to execute the process. -->
+    <Exec Command="&quot;$(RunThis_DotNetHost)&quot; &quot;$(RunThis_GeneratorAssembly)&quot; SourceToSource &quot;$(RunThis_ArgsFile)&quot;" Outputs="$(RunThis_OutputFileName)" />
+
+    <ItemGroup>
+      <Compile Include="$(RunThis_OutputFileName)" Condition="Exists('$(RunThis_OutputFileName)')" />
+      <FileWrites Include="$(RunThis_OutputFileName)" Condition="Exists('$(RunThis_OutputFileName)')"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RunThisIncludeCodegenOutputDuringDesignTimeBuild"
+          BeforeTargets="AssignTargetPaths"
+          Condition="'$(RunThis_CodeGeneratorEnabled)' != 'true' and Exists('$(RunThis_OutputFileName)')">
+    <ItemGroup>
+      <Compile Include="$(RunThis_OutputFileName)" Condition="Exists('$(RunThis_OutputFileName)')" />
+      <FileWrites Include="$(RunThis_OutputFileName)" Condition="Exists('$(RunThis_OutputFileName)')" />
+    </ItemGroup>
+  </Target>
+</Project>
