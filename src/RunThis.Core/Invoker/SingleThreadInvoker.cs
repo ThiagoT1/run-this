@@ -1,6 +1,8 @@
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace RunThis.Core.Invoker
 {
@@ -31,36 +33,116 @@ namespace RunThis.Core.Invoker
             ReturnExecutionSlot();
         }
 
-        public override async ValueTask<T> ExecuteValueCall<T>(ICall<T> call)
+        public override ValueTask<T> ExecuteValueCall<T>(ICall<T> call)
         {
             if (!ClaimExecutionSlot())
-                await WaitForExecutionSlot();
+                return SlowExecuteValueCall(this, call);
 
-            try
-            {
-                return await call.Invoke();
-            }
-            finally
+            if (FastExecuteValueCall(this, call, out var valueTask))
             {
                 ReturnExecutionSlot();
+                return valueTask;
+            }
+
+            return SlowAwait(this, valueTask);
+
+            static async ValueTask<T> SlowExecuteValueCall(SingleThreadInvoker @this, ICall<T> call)
+            {
+                await @this.WaitForExecutionSlot();
+
+                try
+                {
+                    return await call.Invoke();
+                }
+                finally
+                {
+                    @this.ReturnExecutionSlot();
+                }
+            }
+
+            static async ValueTask<T> SlowAwait(SingleThreadInvoker @this, ValueTask<T> valueTask)
+            {
+                try
+                {
+                    return await valueTask;
+                }
+                finally
+                {
+                    @this.ReturnExecutionSlot();
+                }
+            }
+            static bool FastExecuteValueCall(SingleThreadInvoker @this, ICall<T> call, out ValueTask<T> valueTask)
+            {
+                try
+                {
+                    valueTask = call.Invoke();
+                }
+                catch
+                {
+                    @this.ReturnExecutionSlot();
+                    throw;
+                }
+
+                return valueTask.IsCompleted;
             }
         }
 
-        public override async ValueTask ExecuteVoidCall(ICall call)
+        public override ValueTask ExecuteVoidCall(ICall call)
         {
             if (!ClaimExecutionSlot())
-                await WaitForExecutionSlot();
+                return SlowExecuteVoidCall(this, call);
 
-            try
-            {
-                await call.Invoke();
-            }
-            finally
+            if (FastExecuteVoidCall(this, call, out var valueTask))
             {
                 ReturnExecutionSlot();
+                return valueTask;
             }
+
+            return SlowAwait(this, valueTask);
+
+            static async ValueTask SlowExecuteVoidCall(SingleThreadInvoker @this, ICall call)
+            {
+                await @this.WaitForExecutionSlot();
+
+                try
+                {
+                    await call.Invoke();
+                }
+                finally
+                {
+                    @this.ReturnExecutionSlot();
+                }
+            }
+
+            static async ValueTask SlowAwait(SingleThreadInvoker @this, ValueTask valueTask)
+            {
+                try
+                {
+                    await valueTask;
+                }
+                finally
+                {
+                    @this.ReturnExecutionSlot();
+                }
+            }
+            static bool FastExecuteVoidCall(SingleThreadInvoker @this, ICall call, out ValueTask valueTask)
+            {
+                try
+                {
+                    valueTask = call.Invoke();
+                }
+                catch
+                {
+                    @this.ReturnExecutionSlot();
+                    throw;
+                }
+
+                return valueTask.IsCompleted;
+            }
+
         }
 
+        
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async ValueTask WaitForExecutionSlot()

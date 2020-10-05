@@ -1,0 +1,1 @@
+dotnet run -p .\RunThis.Benchmarks\RunThis.Benchmarks.csproj  -c Release -f netcoreapp31 --runtimes netcoreapp31 --filter ** --join
