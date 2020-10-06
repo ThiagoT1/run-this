@@ -8,6 +8,8 @@ namespace RunThis.Tests.Targets
 
         ValueTask TakeDamage(int value);
 
+        ValueTask<bool> CanTakeDamage(int value);
+
         ValueTask<int> GetRemainingHealth();
 
     }
@@ -30,6 +32,11 @@ namespace RunThis.Tests.Targets
         {
             _health -= value;
             return default;
+        }
+
+        public ValueTask<bool> CanTakeDamage(int value)
+        {
+            return new ValueTask<bool>(_health - value >= 0);
         }
     }
 

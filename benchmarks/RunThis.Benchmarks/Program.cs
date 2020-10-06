@@ -22,8 +22,8 @@ namespace RunThis.Benchmarks
 
             bench.Messages = RunThisBenchmarks.TenM;
             bench.Setup();
-            await bench.StaticVoidValueTask();
-            await bench.MetaVoidValueTask();
+            await bench.NativeValueTask();
+            await bench.CodeGenValueTask();
 
 
             Console.WriteLine("");

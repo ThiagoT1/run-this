@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using RunThis.Core.Invoker;
 
@@ -43,19 +44,50 @@ namespace RunThis.Tests.Targets
             public ValueTask Invoke() => _target.TakeDamage(_value);
         }
 
+        readonly struct CanTakeDamageCall : ICall<bool>
+        {
+            private readonly IFighter _target;
+            private readonly int _value;
+
+            public CanTakeDamageCall(IFighter target, int value)
+            {
+                _target = target;
+                _value = value;
+            }
+
+            public ValueTask<bool> Invoke() => _target.CanTakeDamage(_value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ValueTask ExecuteVoidCall(ICall call)
+        {
+            return _invoker.ExecuteVoidCall(call);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ValueTask<T> ExecuteValueCall<T>(ICall<T> call)
+        {
+            return _invoker.ExecuteValueCall(call);
+        }
+
         public ValueTask GetReady()
         {
-            return _invoker.ExecuteVoidCall(new GetReadyCall(_target));
+            return ExecuteVoidCall(new GetReadyCall(_target));
         }
 
         public ValueTask<int> GetRemainingHealth()
         {
-            return _invoker.ExecuteValueCall(new GetRemainingHealthCall(_target));
+            return ExecuteValueCall(new GetRemainingHealthCall(_target));
         }
 
         public ValueTask TakeDamage(int value)
         {
-            return _invoker.ExecuteVoidCall(new TakeDamageCall(_target, value));
-        }   
+            return ExecuteVoidCall(new TakeDamageCall(_target, value));
+        }
+
+        public ValueTask<bool> CanTakeDamage(int value)
+        {
+            return ExecuteValueCall(new CanTakeDamageCall(_target, value));
+        }
     }
 }
