@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using RunThis.Core;
 using RunThis.Core.Invoker;
 
 namespace RunThis.Tests.Targets
