@@ -1,18 +1,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Sources;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
 using RunThis.Core.CodeGenerator;
@@ -302,22 +298,6 @@ namespace RunThis.Core.Directory
                 );
 
                 references.Add(MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location));
-
-
-
-                //MetadataReference[] references = trustedAssembliesPaths.Select(r => MetadataReference.CreateFromFile(r)).ToArray();
-
-                //var refPaths = new[] {
-                //    typeof(object).GetTypeInfo().Assembly.Location,
-                //    typeof(T).GetTypeInfo().Assembly.Location,
-                //    typeof(ProxyCache<T>).GetTypeInfo().Assembly.Location,
-                //    Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location), "System.Runtime.dll")
-                //};
-
-                //MetadataReference[] references = refPaths
-                //    .Concat(trustedAssembliesPaths.Where(x => x.Contains("netstandard")))
-                //    .Select(r => MetadataReference.CreateFromFile(r))
-                //    .ToArray();
 
                 logger?.LogInformation("Adding the following references");
 
