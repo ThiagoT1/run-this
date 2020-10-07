@@ -21,18 +21,25 @@ namespace RunThis.Core.Directory
     public interface IInvokerDirectory
     {
         T AsAddress<T>(T target);
-        bool Remove<T>(T target);
+        bool DeactivateAddress<T>(T target);
     }
     public class InvokerDirectory : IInvokerDirectory
     {
         class InvokerContext
         {
-            public InvokerContext(object proxy)
+            ConcurrentDictionary<Type, object> _proxies;
+            IInvoker _invoker;
+            public InvokerContext()
             {
-                Proxy = proxy;
+                _proxies = new ConcurrentDictionary<Type, object>();
+                _invoker = new SingleThreadInvoker();
             }
 
-            public object Proxy { get; private set; }
+            internal T GetProxy<T>(T target, ILogger<InvokerDirectory> logger)
+            {
+                var proxy = _proxies.GetOrAdd(typeof(T), (type) => ProxyCache<T>.CreateProxy(target, _invoker, logger));
+                return (T)proxy;
+            }
         }
 
         private readonly ConcurrentDictionary<object, InvokerContext> _contexts;
@@ -342,18 +349,18 @@ namespace RunThis.Core.Directory
 
         }
 
-        private InvokerContext CreateContext<T>(T target, ILogger logger)
+        private InvokerContext CreateContext()
         {
-            return new InvokerContext(ProxyCache<T>.CreateProxy(target, new SingleThreadInvoker(), logger));
+            return new InvokerContext();
         }
 
         public T AsAddress<T>(T target)
         {
-            var context = _contexts.GetOrAdd(target, CreateContext(target, _logger));
-            return (T)context.Proxy;
+            var context = _contexts.GetOrAdd(target, (obj) => CreateContext());
+            return context.GetProxy(target, _logger);
         }
 
-        public bool Remove<T>(T target)
+        public bool DeactivateAddress<T>(T target)
         {
             return _contexts.TryRemove(target, out _);
         }
