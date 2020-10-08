@@ -58,6 +58,9 @@ namespace RunThis.Core.Directory
 
             static ProxyCache()
             {
+                if (!typeof(T).IsInterface)
+                    throw new Exception("We need interfaces");
+
                 _lockObject = new object();
             }
             internal static T CreateProxy(T target, IInvoker invoker, ILogger logger)
@@ -151,9 +154,17 @@ namespace RunThis.Core.Directory
                     ParemeterName = paremeterName;
                 }
             }
+            private static void GetInterfaceMethods(List<MethodInfo> methodList, Type type)
+            {
+                methodList.AddRange(type.GetMethods());
+                foreach (var innerInterface in type.GetInterfaces())
+                    GetInterfaceMethods(methodList, innerInterface);
+            }
             private static void WriteMethodCalls(StringBuilder methodCalls, Type interfaceType)
             {
-                var methods = interfaceType.GetMethods();
+                List<MethodInfo> methods = new List<MethodInfo>();
+
+                GetInterfaceMethods(methods, interfaceType);
 
                 const string voidCallTemplate = @"
 

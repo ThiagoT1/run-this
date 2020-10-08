@@ -2,16 +2,19 @@ using System.Threading.Tasks;
 
 namespace RunThis.Tests.Targets
 {
-    public interface IFighter<T>
+    public interface IFighter<T> : IPlayer
     {
-        ValueTask GetReady();
-
         ValueTask TakeDamage(int value);
 
         ValueTask<bool> CanTakeDamage(int value);
 
         ValueTask<int> GetRemainingHealth();        
 
+    }
+
+    public interface IPlayer
+    {
+        ValueTask GetReady();
     }
 
     public class Fighter : IFighter<bool>
