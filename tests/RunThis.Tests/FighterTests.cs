@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RunThis.Core.Directory;
 using RunThis.Core.Invoker;
 using RunThis.Tests.Targets;
 using TestExtensions;
@@ -17,20 +18,23 @@ namespace RunThis.Tests
     public class FighterTests : IClassFixture<RunThisTestFixture>
     {
         private readonly RunThisTestFixture _fixture;
+        private readonly IInvokerDirectory _directory;
         private readonly ITestOutputHelper _output;
 
         public FighterTests(ITestOutputHelper output, RunThisTestFixture fixture)
         {
             _fixture = fixture;
             _output = output;
+            _directory = fixture.Provider.GetRequiredService<IInvokerDirectory>();
+
             XunitLoggerProvider.PlugOutput(output);
         }
 
         [Fact]
         public async Task GetReady()
         {
-            IFighter fighter = new Fighter();
-            IFighter proxy = new FighterProxy(fighter, new SingleThreadInvoker());
+            IFighter<bool> fighter = new Fighter();
+            IFighter<bool> proxy = _directory.AsAddress(fighter);
             await proxy.GetReady();
         }
 
@@ -38,8 +42,8 @@ namespace RunThis.Tests
         [InlineData(10_240_000)]
         public async Task Throughput_GetReady(int messageCount)
         {
-            IFighter fighter = new Fighter();
-            IFighter proxy = new FighterProxy(fighter, new SingleThreadInvoker());
+            IFighter<bool> fighter = new Fighter();
+            IFighter<bool> proxy = _directory.AsAddress(fighter);
 
             Stopwatch watch = Stopwatch.StartNew();
             watch.Reset();
@@ -70,8 +74,8 @@ namespace RunThis.Tests
         [InlineData(10_240_000)]
         public async Task Throughput_GetRemainingHealth(int messageCount)
         {
-            IFighter fighter = new Fighter();
-            IFighter proxy = new FighterProxy(fighter, new SingleThreadInvoker());
+            IFighter<bool> fighter = new Fighter();
+            IFighter<bool> proxy = _directory.AsAddress(fighter);
 
             Stopwatch watch = Stopwatch.StartNew();
             watch.Reset();

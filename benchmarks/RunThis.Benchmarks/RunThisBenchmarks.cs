@@ -1,5 +1,7 @@
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using RunThis.Core.Directory;
 using RunThis.Core.Invoker;
 using RunThis.Tests.Targets;
 
@@ -8,8 +10,10 @@ namespace RunThis.Benchmarks
     [MemoryDiagnoser]
     public class RunThisBenchmarks
     {
-        private IFighter _fighter;
-        private IFighter _proxy;
+        private IFighter<bool> _fighter;
+        private IFighter<bool> _staticProxy;
+        private IFighter<bool> _codegenProxy;
+        private IInvokerDirectory _directory;
         public RunThisBenchmarks()
         {
         }
@@ -17,24 +21,97 @@ namespace RunThis.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
+            _directory = new InvokerDirectory(null);
             _fighter = new Fighter();
-            _proxy = new FighterProxy(_fighter, new SingleThreadInvoker());
+            _staticProxy = new FighterProxy(_fighter, new SingleThreadInvoker());
+            _codegenProxy = _directory.AsAddress(_fighter);
         }
 
         public const int TenM = 10_240_000;
 
-        [Params(1_024_000, TenM)]
+        [Params(TenM)]
         public int Messages;
 
         [Benchmark(Baseline = true, OperationsPerInvoke = 1)]
-        public async Task VoidValueTask()
+        public async Task NativeVoidTask()
         {
             int messageCount = Messages;
 
             for (var i = 0; i < messageCount; i++)
-                await _proxy.GetReady();
+                await _staticProxy.GetReady();
 
         }
+
+        [Benchmark(OperationsPerInvoke = 1)]
+        public async Task CodeGenVoidTask()
+        {
+            int messageCount = Messages;
+
+            for (var i = 0; i < messageCount; i++)
+                await _codegenProxy.GetReady();
+
+        }
+
+        [Benchmark(OperationsPerInvoke = 1)]
+        public async Task NativeValueTask()
+        {
+            int messageCount = Messages;
+
+            for (var i = 0; i < messageCount; i++)
+                await _staticProxy.GetRemainingHealth();
+
+        }
+
+        [Benchmark(OperationsPerInvoke = 1)]
+        public async Task CodeGenValueTask()
+        {
+            int messageCount = Messages;
+
+            for (var i = 0; i < messageCount; i++)
+                await _codegenProxy.GetRemainingHealth();
+
+        }
+
+        [Benchmark(OperationsPerInvoke = 1)]
+        public async Task NativeVoidParametersTask()
+        {
+            int messageCount = Messages;
+
+            for (var i = 0; i < messageCount; i++)
+                await _staticProxy.TakeDamage(10);
+
+        }
+
+        [Benchmark(OperationsPerInvoke = 1)]
+        public async Task CodeGenVoidParametersTask()
+        {
+            int messageCount = Messages;
+
+            for (var i = 0; i < messageCount; i++)
+                await _codegenProxy.TakeDamage(10);
+
+        }
+
+        [Benchmark(OperationsPerInvoke = 1)]
+        public async Task NativeValueParametersTask()
+        {
+            int messageCount = Messages;
+
+            for (var i = 0; i < messageCount; i++)
+                await _staticProxy.CanTakeDamage(110);
+
+        }
+
+        [Benchmark(OperationsPerInvoke = 1)]
+        public async Task CodeGenValueParametersTask()
+        {
+            int messageCount = Messages;
+
+            for (var i = 0; i < messageCount; i++)
+                await _codegenProxy.CanTakeDamage(110);
+
+        }
+
 
 
     }

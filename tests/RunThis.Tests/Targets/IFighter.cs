@@ -1,21 +1,23 @@
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestPlatform.Common.Interfaces;
 
 namespace RunThis.Tests.Targets
 {
-    public interface IFighter
+    public interface IFighter<T> : IPlayer
     {
-        ValueTask GetReady();
-
         ValueTask TakeDamage(int value);
 
-        ValueTask<int> GetRemainingHealth();
+        ValueTask<bool> CanTakeDamage(int value);
+
+        ValueTask<int> GetRemainingHealth();        
 
     }
 
-    public class Fighter : IFighter
+    public interface IPlayer
+    {
+        ValueTask GetReady();
+    }
+
+    public class Fighter : IFighter<bool>
     {
         int _health;
         public ValueTask GetReady()
@@ -33,6 +35,11 @@ namespace RunThis.Tests.Targets
         {
             _health -= value;
             return default;
+        }
+
+        public ValueTask<bool> CanTakeDamage(int value)
+        {
+            return new ValueTask<bool>(_health - value >= 0);
         }
     }
 

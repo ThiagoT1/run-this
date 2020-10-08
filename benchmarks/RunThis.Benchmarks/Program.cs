@@ -20,7 +20,11 @@ namespace RunThis.Benchmarks
             //Debug Only
             var bench = new RunThisBenchmarks();
 
-            await bench.VoidValueTask();
+            bench.Messages = RunThisBenchmarks.TenM;
+            bench.Setup();
+            await bench.NativeValueTask();
+            await bench.CodeGenValueTask();
+
 
             Console.WriteLine("");
             Console.WriteLine($"HOT ({RunThisBenchmarks.TenM:N0} messages) => ");

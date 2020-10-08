@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>BenchmarkRun-joined-2020-10-04-21-27-43</title>
+<title>BenchmarkRun-joined-2020-10-06-05-48-18</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -13,20 +13,26 @@
 </head>
 <body>
 <pre><code>
-BenchmarkDotNet=v0.12.1, OS=Windows 10.0.19041.546 (2004/?/20H1)
+BenchmarkDotNet=v0.12.0, OS=Windows 10.0.19041
 Unknown processor
 .NET Core SDK=3.1.402
   [Host]     : .NET Core 3.1.8 (CoreCLR 4.700.20.41105, CoreFX 4.700.20.41903), X64 RyuJIT
-  Job-UIPIXW : .NET Core 3.1.8 (CoreCLR 4.700.20.41105, CoreFX 4.700.20.41903), X64 RyuJIT
+  Job-YMVYNC : .NET Core 3.1.8 (CoreCLR 4.700.20.41105, CoreFX 4.700.20.41903), X64 RyuJIT
 </code></pre>
 <pre><code>Runtime=.NET Core 3.1  Toolchain=netcoreapp31  
 </code></pre>
 
 <table>
-<thead><tr><th> Method</th><th>Messages</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
+<thead><tr><th>              Method</th><th>Messages</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Median</th><th>Ratio</th><th>RatioSD</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
 </tr>
-</thead><tbody><tr><td>VoidValueTask</td><td>1024000</td><td>48.59 ms</td><td>0.164 ms</td><td>0.153 ms</td><td>1.00</td><td>2909.0909</td><td>-</td><td>-</td><td>23.44 MB</td>
-</tr><tr><td>VoidValueTask</td><td>10240000</td><td>479.07 ms</td><td>1.547 ms</td><td>1.208 ms</td><td>1.00</td><td>29000.0000</td><td>-</td><td>-</td><td>234.38 MB</td>
+</thead><tbody><tr><td>NativeVoidTask</td><td>10240000</td><td>495.2 ms</td><td>9.72 ms</td><td>15.41 ms</td><td>487.0 ms</td><td>1.00</td><td>0.00</td><td>29000.0000</td><td>-</td><td>-</td><td>234.38 MB</td>
+</tr><tr><td>CodeGenVoidTask</td><td>10240000</td><td>489.3 ms</td><td>2.47 ms</td><td>2.19 ms</td><td>489.0 ms</td><td>0.99</td><td>0.02</td><td>29000.0000</td><td>-</td><td>-</td><td>234.38 MB</td>
+</tr><tr><td>NativeValueTask</td><td>10240000</td><td>543.2 ms</td><td>1.98 ms</td><td>1.75 ms</td><td>542.9 ms</td><td>1.10</td><td>0.03</td><td>29000.0000</td><td>-</td><td>-</td><td>234.38 MB</td>
+</tr><tr><td>CodeGenValueTask</td><td>10240000</td><td>500.3 ms</td><td>4.19 ms</td><td>3.92 ms</td><td>500.4 ms</td><td>1.01</td><td>0.02</td><td>29000.0000</td><td>-</td><td>-</td><td>234.38 MB</td>
+</tr><tr><td>NativeVoidParametersTask</td><td>10240000</td><td>509.6 ms</td><td>8.96 ms</td><td>8.39 ms</td><td>506.7 ms</td><td>1.03</td><td>0.03</td><td>39000.0000</td><td>-</td><td>-</td><td>312.5 MB</td>
+</tr><tr><td>CodeGenVoidParametersTask</td><td>10240000</td><td>494.7 ms</td><td>2.80 ms</td><td>2.34 ms</td><td>495.1 ms</td><td>1.00</td><td>0.02</td><td>39000.0000</td><td>-</td><td>-</td><td>312.5 MB</td>
+</tr><tr><td>NativeValueParametersTask</td><td>10240000</td><td>542.7 ms</td><td>1.41 ms</td><td>1.25 ms</td><td>543.0 ms</td><td>1.10</td><td>0.03</td><td>39000.0000</td><td>-</td><td>-</td><td>312.5 MB</td>
+</tr><tr><td>CodeGenValueParametersTask</td><td>10240000</td><td>541.2 ms</td><td>4.05 ms</td><td>3.79 ms</td><td>542.1 ms</td><td>1.10</td><td>0.03</td><td>39000.0000</td><td>-</td><td>-</td><td>312.5 MB</td>
 </tr></tbody></table>
 </body>
 </html>
