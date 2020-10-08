@@ -37,7 +37,12 @@ namespace RunThis.Core.Directory
 
             internal T GetProxy<T>(T target, ILogger<InvokerDirectory> logger)
             {
-                var proxy = _proxies.GetOrAdd(typeof(T), (type) => ProxyCache<T>.CreateProxy(target, _invoker, logger));
+                var invoker = _invoker;
+                var localTarget = target;
+                var localLogger = logger;
+
+                var proxy = _proxies.GetOrAdd(typeof(T), (type) => ProxyCache<T>.CreateProxy(localTarget, invoker, localLogger));
+
                 return (T)proxy;
             }
         }
@@ -53,7 +58,7 @@ namespace RunThis.Core.Directory
 
         static class ProxyCache<T>
         {
-            static Func<T> _proxyFactory;
+            static Func<T, IInvoker, ILogger, T> _proxyFactory;
             static object _lockObject;
 
             static ProxyCache()
@@ -68,19 +73,19 @@ namespace RunThis.Core.Directory
                 if (_proxyFactory == null)
                     lock (_lockObject)
                         if (_proxyFactory == null)
-                            _proxyFactory = CreateProxyFactory(target, invoker, logger);
+                            _proxyFactory = CreateProxyFactory(logger);
 
-                return _proxyFactory();
+                return _proxyFactory(target, invoker, logger);
             }
 
-            private static Func<T> CreateProxyFactory(T target, IInvoker invoker, ILogger logger)
+            private static Func<T, IInvoker, ILogger, T> CreateProxyFactory(ILogger logger)
             {
                 var source = CreateProxyCode(out var typeName);
 
                 if (!TryCompileType(source, logger, typeName, out var proxyType, out var message))
                     throw new Exception(message);
 
-                return () => (T)Activator.CreateInstance(proxyType, target, invoker);
+                return (T target, IInvoker invoker, ILogger logger) => (T)Activator.CreateInstance(proxyType, target, invoker);
             }
 
 
