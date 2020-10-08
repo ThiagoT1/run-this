@@ -107,13 +107,13 @@ namespace RunThis.Core.Directory
                         //TName: {0}
                         //TFullName: {1}
                         //CallStructs: {{2}}                        
-                        public class {0}Proxy : global::{1}
+                        public class {0}Proxy : {1}
                         {{
-                            private readonly global::{1} _target;
+                            private readonly {1} _target;
                             private readonly global::RunThis.Core.Invoker.IInvoker _invoker;
 
 
-                            public {0}Proxy(global::{1} target, global::RunThis.Core.Invoker.IInvoker invoker)
+                            public {0}Proxy({1} target, global::RunThis.Core.Invoker.IInvoker invoker)
                             {{
                                 _target = target;
                                 _invoker = invoker;
@@ -142,7 +142,7 @@ namespace RunThis.Core.Directory
                 return string.Format(
                     template,
                     typeof(T).GetProxyName(out _),
-                    typeof(T).GetFriendlyFullName(out _),
+                    typeof(T).GetFriendlyGlobalName(out _),
                     methodCalls.ToString(),
                     typeof(T).Namespace
                 );
@@ -194,23 +194,23 @@ namespace RunThis.Core.Directory
 
                             readonly struct {1}Call : global::RunThis.Core.Invoker.ICall{7}
                             {{
-                                private readonly global::{0} _target;
+                                private readonly {0} _target;
                                 
                                 {5}
 
-                                public {1}Call(global::{0} target{8}{3})
+                                public {1}Call({0} target{8}{3})
                                 {{
                                     _target = target;
                                     {6}
                                 }}
 
-                                public global::{2} Invoke() => _target.{1}({4});
+                                public {2} Invoke() => _target.{1}({4});
                             }}
 
                 ";
 
                 const string privateDeclarationTemplate = @"
-                                private readonly global::{0} {1};
+                                private readonly {0} {1};
                 ";
 
                 const string privateStoreTemplate = @"
@@ -237,21 +237,21 @@ namespace RunThis.Core.Directory
                         template = voidCallTemplate;
                     }
 
-                    var parameters = method.GetParameters().Select(p => new ParameterInfo(p.ParameterType.GetFriendlyFullName(out _), p.Name)).ToArray();
+                    var parameters = method.GetParameters().Select(p => new ParameterInfo(p.ParameterType.GetFriendlyGlobalName(out _), p.Name)).ToArray();
 
-                    var parameterList = string.Join(", ", parameters.Select(x => $"global::{x.FullTypeName} {x.ParemeterName}"));
+                    var parameterList = string.Join(", ", parameters.Select(x => $"{x.FullTypeName} {x.ParemeterName}"));
                     var parameterNames = string.Join(", ", parameters.Select(x => $"{x.ParemeterName}"));
 
                     var privateFields = parameters.Select(x => string.Format(privateDeclarationTemplate, x.FullTypeName, x.ParemeterName));
                     var storeFields = parameters.Select(x => string.Format(privateStoreTemplate, x.ParemeterName));
 
-                    methodCalls.AppendFormat(template, $"global::{returnTypefullName}", method.Name, parameterList, parameterNames, parameterList.Length > 0 ? ", " : "");
+                    methodCalls.AppendFormat(template, $"{returnTypefullName}", method.Name, parameterList, parameterNames, parameterList.Length > 0 ? ", " : "");
 
                     template = structTemplate;
 
                     methodCalls.AppendFormat(
                         template,
-                        interfaceType.GetFriendlyFullName(out _),   //0
+                        interfaceType.GetFriendlyGlobalName(out _),   //0
                         method.Name,                                //1
                         returnTypefullName,                         //2
                         parameterList,                              //3
@@ -274,20 +274,20 @@ namespace RunThis.Core.Directory
 
                 if (returnType == typeof(ValueTask))
                 {
-                    fullName = returnType.GetFriendlyFullName(out returnGenericParameters);
+                    fullName = returnType.GetFriendlyGlobalName(out returnGenericParameters);
                     returnGenericParameters = null;
                     return;
                 }
 
                 if (returnType.IsGenericType)
                 {
-                    fullName = returnType.GetFriendlyFullName(out returnGenericParameters);
+                    fullName = returnType.GetFriendlyGlobalName(out returnGenericParameters);
                     isGeneric = true;
                     if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
                         return;
                 }
 
-                throw new Exception($"Return type must be either {nameof(ValueTask)} or {nameof(ValueTask)}<T> (it was {fullName})");
+                throw new Exception($"[{typeof(T).GetFriendlyGlobalName(out _)}] Return type must be either {nameof(ValueTask)} or {nameof(ValueTask)}<T> (it was {fullName})");
             }
 
             private static bool TryCompileType(string source, ILogger logger, string typeName, out Type type, out string message)
