@@ -287,14 +287,14 @@ namespace RunThis.Core.Directory
                         return;
                 }
 
-                throw new Exception($"[{typeof(T).GetFriendlyGlobalName(out _)}] Return type must be either {nameof(ValueTask)} or {nameof(ValueTask)}<T> (it was {fullName})");
+                throw new Exception($"[{typeof(T).GetFriendlyFullName(out _)}] Return type must be either {nameof(ValueTask)} or {nameof(ValueTask)}<T> (it was {fullName})");
             }
 
             private static bool TryCompileType(string source, ILogger logger, string typeName, out Type type, out string message)
             {
                 message = "";
                 type = null;
-                logger?.LogInformation("Parsing the code into the SyntaxTree");
+                logger?.LogInformation($"[{typeof(T).GetFriendlyFullName(out _)}] Parsing the code into the SyntaxTree");
 
 
                 SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source);
@@ -322,12 +322,12 @@ namespace RunThis.Core.Directory
 
                 references.Add(MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location));
 
-                logger?.LogInformation("Adding the following references");
+                logger?.LogInformation($"[{typeof(T).GetFriendlyFullName(out _)}] Adding the following references");
 
                 foreach (var r in references)
-                    logger?.LogInformation(r.FilePath);
+                    logger?.LogInformation($"[{typeof(T).GetFriendlyFullName(out _)}] {r.FilePath}");
 
-                logger?.LogInformation("Compiling ...");
+                logger?.LogInformation($"[{typeof(T).GetFriendlyFullName(out _)}] Compiling ...");
 
                 CSharpCompilation compilation = CSharpCompilation.Create(
                     assemblyName,
@@ -341,23 +341,26 @@ namespace RunThis.Core.Directory
 
                     if (!result.Success)
                     {
-                        logger?.LogError("Compilation failed!");
+                        logger?.LogError($"[{typeof(T).GetFriendlyFullName(out _)}] Compilation failed!");
                         IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
                             diagnostic.IsWarningAsError ||
                             diagnostic.Severity == DiagnosticSeverity.Error);
 
                         foreach (Diagnostic diagnostic in failures)
-                            message += $"{diagnostic.Id}: {diagnostic.GetMessage()}\n";
+                            message += $"[{typeof(T).GetFriendlyFullName(out _)}] {diagnostic.Id}: {diagnostic.GetMessage()}\n";
 
                         return false;
                     }
                     else
                     {
-                        logger?.LogInformation("Compilation successful! Now instantiating and executing the code ...");
+                        logger?.LogInformation($"[{typeof(T).GetFriendlyFullName(out _)}] Compilation successful!");
                         ms.Seek(0, SeekOrigin.Begin);
 
                         Assembly assembly = AssemblyLoadContext.Default.LoadFromStream(ms);
                         type = assembly.GetType(typeName);
+
+                        logger?.LogInformation($"[{typeof(T).GetFriendlyFullName(out _)}] Compiled type => {type.GetFriendlyName(out _)}");
+
                         return true;
                     }
                 }
