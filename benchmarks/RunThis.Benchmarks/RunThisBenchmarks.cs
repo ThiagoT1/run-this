@@ -10,9 +10,9 @@ namespace RunThis.Benchmarks
     [MemoryDiagnoser]
     public class RunThisBenchmarks
     {
-        private IFighter _fighter;
-        private IFighter _staticProxy;
-        private IFighter _codegenProxy;
+        private IFighter<bool> _fighter;
+        private IFighter<bool> _staticProxy;
+        private IFighter<bool> _codegenProxy;
         private IInvokerDirectory _directory;
         public RunThisBenchmarks()
         {

@@ -24,6 +24,8 @@ namespace RunThis.Core.CodeGenerator
             return name;
         }
 
+
+
         public static string GetFriendlyFullName(this Type t, out string[] genericParameters)
         {
             genericParameters = null;
@@ -35,7 +37,7 @@ namespace RunThis.Core.CodeGenerator
                                      select GetFriendlyFullName(ga, out _)).ToArray();
 
                 sb.Append("<");
-                sb.Append(string.Join(genericSeparator, genericParameters));
+                sb.Append(string.Join(genericSeparator, genericParameters.Select(x => $"global::{x}")));
                 sb.Append(">");
             }
             return sb.ToString();
@@ -54,6 +56,21 @@ namespace RunThis.Core.CodeGenerator
                 sb.Append("<");
                 sb.Append(string.Join(genericSeparator, genericParameters));
                 sb.Append(">");
+            }
+            return sb.ToString();
+        }
+
+        public static string GetProxyName(this Type t, out string[] genericParameters)
+        {
+            genericParameters = null;
+            StringBuilder sb = new StringBuilder();
+            sb.Append(t.GetCleanName());
+            if (t.IsGenericType)
+            {
+                genericParameters = (from ga in t.GetGenericArguments()
+                                     select GetFriendlyFullName(ga, out _)).ToArray();
+
+                sb.Append(Math.Abs(string.Join(genericSeparator, genericParameters).GetHashCode()));
             }
             return sb.ToString();
         }

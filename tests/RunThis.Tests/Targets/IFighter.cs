@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace RunThis.Tests.Targets
 {
-    public interface IFighter
+    public interface IFighter<T>
     {
         ValueTask GetReady();
 
@@ -10,11 +10,11 @@ namespace RunThis.Tests.Targets
 
         ValueTask<bool> CanTakeDamage(int value);
 
-        ValueTask<int> GetRemainingHealth();
+        ValueTask<int> GetRemainingHealth();        
 
     }
 
-    public class Fighter : IFighter
+    public class Fighter : IFighter<bool>
     {
         int _health;
         public ValueTask GetReady()

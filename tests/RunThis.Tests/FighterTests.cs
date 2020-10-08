@@ -33,8 +33,8 @@ namespace RunThis.Tests
         [Fact]
         public async Task GetReady()
         {
-            IFighter fighter = new Fighter();
-            IFighter proxy = _directory.AsAddress(fighter);
+            IFighter<bool> fighter = new Fighter();
+            IFighter<bool> proxy = _directory.AsAddress(fighter);
             await proxy.GetReady();
         }
 
@@ -42,8 +42,8 @@ namespace RunThis.Tests
         [InlineData(10_240_000)]
         public async Task Throughput_GetReady(int messageCount)
         {
-            IFighter fighter = new Fighter();
-            IFighter proxy = _directory.AsAddress(fighter);
+            IFighter<bool> fighter = new Fighter();
+            IFighter<bool> proxy = _directory.AsAddress(fighter);
 
             Stopwatch watch = Stopwatch.StartNew();
             watch.Reset();
@@ -74,8 +74,8 @@ namespace RunThis.Tests
         [InlineData(10_240_000)]
         public async Task Throughput_GetRemainingHealth(int messageCount)
         {
-            IFighter fighter = new Fighter();
-            IFighter proxy = _directory.AsAddress(fighter);
+            IFighter<bool> fighter = new Fighter();
+            IFighter<bool> proxy = _directory.AsAddress(fighter);
 
             Stopwatch watch = Stopwatch.StartNew();
             watch.Reset();
