@@ -84,7 +84,7 @@ namespace RunThis.Core.Directory
             }
 
 
-            
+
 
             private static string CreateProxyCode(out string typeName)
             {
@@ -311,7 +311,7 @@ namespace RunThis.Core.Directory
 
                 references.AddRange(
                     trustedAssembliesPaths
-                    .Where(x => x.Contains("netstandard"))
+                    .Where(x => x.ToLower().Contains("netstandard") || x.ToLower().Contains("runtime"))
                     .Select(x => MetadataReference.CreateFromFile(x))
                 );
 
